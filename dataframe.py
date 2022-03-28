@@ -1,5 +1,6 @@
 from py4j.protocol import Py4JJavaError
 from instance import *
+from support import *
 import numpy as np
 from pyspark.sql import SparkSession, Window
 from pyspark import SparkContext, SparkConf
@@ -83,8 +84,11 @@ class DataFrame:
                 return obj1.join(new_obj1, obj1.row_idx == new_obj1.row_idx).drop("row_idx")
 
 
-    def apply(self, func, schema=None):
-        pass
-        # if schema is None:
-        #     new_udf = F.udf(func)
-        #     return self.obj.withColumn('_c1', )
+    def apply(self, func, schema=None, column=None):
+        if column is not None:
+            assert isinstance(column, str)
+        cols = self.obj.columns
+        col = ('_c1' if column is None else column)
+        new_udf = F.udf(lambda x: new_func(x, cols, func),(Type.StringType() if schema is None else schema))
+        return self.obj.withColumn(col, 
+            new_udf(F.struct([F.col(i) for i in cols]))).select(col)
