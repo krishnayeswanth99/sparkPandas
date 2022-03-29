@@ -9,7 +9,12 @@ import pyspark.sql.functions as F
 
 class DataFrame:
     
-    def __init__(self, obj=None, columns=None):
+    spark = None
+    
+    def __init__(self, obj=None, columns=None, spark=None):
+        
+        if spark is None:
+            spark = SparkSession.builder.getOrCreate()
 
         if isinstance(df_arr, pysparkDf):
             self.obj = obj
